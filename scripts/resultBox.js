@@ -22,7 +22,7 @@
   </style>
   <section>
     <div>-</div>
-    <img src="clipart1873654.png"
+    <img src="img/clipart1873654.png"
          height="100%"
          width="100%"
          />
