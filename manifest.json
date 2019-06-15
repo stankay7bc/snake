@@ -8,9 +8,9 @@
       "sizes":"200x200"
     }
   ],
-  "start_url": "/",
+  "start_url": "/snake",
   "background_color": "#3367D6",
   "display": "minimal-ui",
-  "scope": "/",
+  "scope": "/snake",
   "theme_color": "#3367D6"
 }
