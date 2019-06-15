@@ -27,12 +27,17 @@ main > section:nth-of-type(2) {
   margin:0 0 .5em 0;
 }
 
+#stat > span:nth-of-type(1) {
+  color:transparent;
+  background-color:#e0b200;
+}
+
 #playground {
   box-shadow:5px 5px 5px grey;  
 }
 
 #playground > canvas {
-  outline:1px solid blue;
+  /*outline:1px solid blue;*/
   position:absolute;
 }
 

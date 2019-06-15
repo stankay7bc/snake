@@ -25,9 +25,9 @@ template.innerHTML = `
 </style>
 <section>
   <img id="arrow-keys" class=""
-  src="https://cdn2.iconfinder.com/data/icons/misc-vol-8/512/arrow_keys_arrows_keyboard_move-128.png"/>
+    src="img/arrow_keys.png"/>
   <img id="hand-touch" class=""
-  src="https://static.thenounproject.com/png/72831-200.png"/>
+    src="img/hand_touch.png"/>
 </section>`;
 
 class ControlInfoBox extends HTMLElement {

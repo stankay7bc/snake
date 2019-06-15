@@ -3,14 +3,14 @@
   "name": "Snake Game",
   "icons": [
     {
-      "src":"/img/snake.png",
+      "src":"/snake/img/snake.png",
       "type":"image/png",
       "sizes":"200x200"
     }
   ],
-  "start_url": "/snake",
+  "start_url": "/snake/",
   "background_color": "#3367D6",
   "display": "minimal-ui",
-  "scope": "/snake",
+  "scope": "/snake/",
   "theme_color": "#3367D6"
 }
