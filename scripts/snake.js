@@ -1,9 +1,3 @@
-/*  
-    - responsive on load
-    - uniform speed across devices (screens)
-   N - revisit game data structure 
-*/
-
 const WRAPPER = document.querySelector("#playground");
 const CANVAS = WRAPPER.querySelector("#dynamic-field");
 const GRID_IMG = WRAPPER.querySelector("#background-grid");
@@ -257,6 +251,17 @@ function hitSelf(body) {
   return false;
 }
 
+/**
+* ?SnakeBody -> Bool
+* return true if snake reached canvas border
+*/
+function hitWall(body) {
+  return (body[body.length-1].x > CANVAS.width) ||
+         (body[body.length-1].y > CANVAS.height) ||
+         (body[body.length-1].x < 0) ||
+         (body[body.length-1].y < 0);
+  }
+
 // init
 
 function makeScene() {
@@ -318,7 +323,7 @@ function startGame(ws,onTick,toDraw,onKey) {
        toDraw:toDraw,
        onKey:onKey,
        stopWhen: ws => {
-         return (ws.body[ws.body.length-1].x > CANVAS.width) || hitSelf(ws.body);
+         return  hitWall(ws.body) || hitSelf(ws.body);
        },
        runAfter: (ws) => {
          RESULT.style.setProperty("display","block");

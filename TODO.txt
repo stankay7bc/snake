@@ -1,0 +1,8 @@
+NEXT
+- revisit and document game data structures
+
+ISSUES
+- input events break after game restart
+
+BACKLOG
+- uniform speed across devices (screens)
