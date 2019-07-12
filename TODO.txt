@@ -6,3 +6,4 @@ ISSUES
 
 BACKLOG
 - uniform speed across devices (screens)
+- one place to change scene dimensions

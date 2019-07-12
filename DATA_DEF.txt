@@ -1,4 +1,4 @@
-GAMEWORLD is an Object:  
+SnakeGame is an Object:  
 - field:SCENE
 - snake:SNAKE  
 - food:FOOD  
@@ -9,12 +9,15 @@ SCENE is an Object:
 - cellDim:N  
 dimensions of a playing field
 
-SNAKE is an Array<sPoint>  
+SNAKE is an Object:
+- body:Array<sPoint>  
+- dir:Direction
 
-  sPoint is an Object: 
-  - x:N, x coordinate on a canvas
-  - y:N, y coordinate on a canvas 
-  - d is either r,l,d,u
+sPoint is an Object: 
+- x:N, x coordinate on a canvas
+- y:N, y coordinate on a canvas 
+
+Direction is either r,l,d,u
 
 FOOD is an Object:
 - x:N, x coordinate on a canvas

@@ -1,3 +1,4 @@
+/*
 html,body {
   height:90%;
 }
@@ -5,6 +6,7 @@ html,body {
 body {
   background-color: #82969c;
 }
+*/
 
 main {
   display:flex;  
@@ -32,9 +34,11 @@ main > section:nth-of-type(2) {
   background-color:#e0b200;
 }
 
+/*
 #playground {
   box-shadow:5px 5px 5px grey;  
 }
+*/
 
 #playground > canvas {
   /*outline:1px solid blue;*/
@@ -51,12 +55,12 @@ main > section:nth-of-type(2) {
   z-index:1;
 }
 
+/*
 #start {
   position:relative;
   z-index:4;
   top:30%;
   width:100%;
-  /*outline:1px solid red;*/
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -72,3 +76,4 @@ result-box {
   position:relative;
   display:none;
 }
+*/

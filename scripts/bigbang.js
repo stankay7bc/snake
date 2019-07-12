@@ -41,7 +41,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
   
   function animate(ws) {
     
-    canvas.addEventListener("touchstart",touchstart,{once:true});
+    if(canvas) canvas.addEventListener("touchstart",touchstart,{once:true});
     
     handlers.onTick(ws);
     handlers.toDraw(ws);
@@ -78,7 +78,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
       y:event.touches[0].clientY 
     };
     //console.log(point1,"start");
-    canvas.addEventListener("touchmove",prepTouchmove(point1),{once:true});
+    if(canvas) canvas.addEventListener("touchmove",prepTouchmove(point1),{once:true});
   }
   
   /**
