@@ -1,26 +1,28 @@
 /**
 * GAME DATA
 */
+const CELLDIM = 14;
+
 const SCENE = {
-  width:320,
-  height:320,
-  cellDim:16,
+  width:CELLDIM*26,
+  height:CELLDIM*30,
   get cellsX() {
-    return this.width/this.cellDim;
+    return this.width/CELLDIM;
   },
   get cellsY() {
-    return this.height/this.cellDim;
+    return this.height/CELLDIM;
   }
 };
 
 const SNAKE = {
   body:[
-    {x:SCENE.cellDim,y:SCENE.cellDim},
+    {x:CELLDIM,y:CELLDIM},
   ],
   dir:'r'
 };
 
 const SGAME = {
+  cellDim:CELLDIM,
   scene:SCENE,
   snake:SNAKE,
 };
@@ -29,9 +31,19 @@ const SGAME = {
 * FUNCTIONS and UTILITIES
 */
 
-const bgCTX = document
-  .querySelector("#background-grid")
-  .getContext('2d'); // background context
+/**
+* SCENE HTMLCanvasElement... -> Void
+*/
+function setSceneDim(scene) {
+  for(let i=1;i<arguments.length;i++) {
+    arguments[i].setAttribute("width",scene.width);
+    arguments[i].setAttribute("height",scene.height);
+  }
+}
+
+const bgField = document // static field
+  .querySelector("#background-grid");
+const bgCTX = bgField.getContext('2d');
 
 function drawScene(scene) {
 
@@ -42,15 +54,15 @@ function drawScene(scene) {
         (numColumn%2 == (numRow%2==0 ? 0 : 1) 
           ? '#3cc73c' : '#3ca03c');
       bgCTX.fillRect(
-        SCENE.cellDim*2*numColumn,
-        SCENE.cellDim*2*numRow,
-        SCENE.cellDim*2,
-        SCENE.cellDim*2);
+        CELLDIM*2*numColumn,
+        CELLDIM*2*numRow,
+        CELLDIM*2,
+        CELLDIM*2);
     }
   }
 
   // draw snake axis
-  let xline = scene.cellDim;
+  let xline = CELLDIM;
   bgCTX.lineWidth = 0.15;  
   do {
 
@@ -66,23 +78,23 @@ function drawScene(scene) {
     bgCTX.closePath();
     bgCTX.stroke();
 
-    xline+=scene.cellDim;
+    xline+=CELLDIM;
 
-  } while (xline<scene.width);
+  } while (xline<scene.height);
   bgCTX.save();
 }
 
-const dnCTX = document
-  .querySelector("#dynamic-field")
-  .getContext('2d'); // dynamic context
+const dnField = document // dynamic field
+  .querySelector("#dynamic-field");
+const dnCTX = dnField.getContext('2d');
 
 function drawSnake(game) {
   dnCTX.clearRect(0,0,game.scene.width,game.scene.height);
   dnCTX.fillStyle = '#1a1a79';
   game.snake.body.forEach(point=>{
     dnCTX.fillRect(
-      point.x-game.scene.cellDim/2,point.y-game.scene.cellDim/2,
-      game.scene.cellDim,game.scene.cellDim);
+      point.x-game.cellDim/2,point.y-game.cellDim/2,
+      game.cellDim,game.cellDim);
   });
 }
 
@@ -118,11 +130,11 @@ function onKey(game,key) {
 
   if(codes[key]=='d'||codes[key]=='u') {
     game.snake.body[0].x = 
-      getJunction(game.snake.body[0].x,game.scene.cellDim);  
+      getJunction(game.snake.body[0].x,game.cellDim);  
     game.snake.dir = codes[key];
   } else if(codes[key]=='r'||codes[key]=='l') {
     game.snake.body[0].y = 
-      getJunction(game.snake.body[0].y,game.scene.cellDim);  
+      getJunction(game.snake.body[0].y,game.cellDim);  
     game.snake.dir = codes[key];
   }
 }
@@ -131,6 +143,7 @@ function onKey(game,key) {
 * init and test
 */
 
+setSceneDim(SCENE,bgField,dnField);
 drawScene(SCENE);
 
 var bb = BigBang(SGAME,
