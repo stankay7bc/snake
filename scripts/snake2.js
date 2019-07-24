@@ -16,7 +16,9 @@ const SCENE = {
 
 const SNAKE = {
   body:[
-    {x:CELLDIM,y:CELLDIM},
+    {x:3*CELLDIM,y:CELLDIM},
+    {x:2*CELLDIM,y:CELLDIM},
+    {x:2*CELLDIM,y:4*CELLDIM},
   ],
   dir:'r'
 };
@@ -88,10 +90,26 @@ const dnField = document // dynamic field
   .querySelector("#dynamic-field");
 const dnCTX = dnField.getContext('2d');
 
+/**
+* 
+*/
 function drawSnake(game) {
   dnCTX.clearRect(0,0,game.scene.width,game.scene.height);
   dnCTX.fillStyle = '#1a1a79';
-  game.snake.body.forEach(point=>{
+  game.snake.body.forEach((point,indx,arr)=>{
+    if(indx<arr.length-1) {
+      if(point.x==arr[indx+1].x) {
+        dnCTX.beginPath();
+        dnCTX.moveTo(point.x,point.y);
+        dnCTX.lineTo(point.x,arr[indx+1].y);
+        dnCTX.stroke();
+      } else {
+        dnCTX.beginPath();
+        dnCTX.moveTo(point.x,point.y);
+        dnCTX.lineTo(arr[indx+1].x,point.y);
+        dnCTX.stroke();
+      }
+    }
     dnCTX.fillRect(
       point.x-game.cellDim/2,point.y-game.cellDim/2,
       game.cellDim,game.cellDim);
@@ -107,6 +125,25 @@ function moveSnake(snake) {
   };
   let amove = stepTable[snake.dir];
   snake.body[0][amove[0]]+=amove[1];
+
+  let tail = snake.body[snake.body.length-1];
+  let penult = snake.body[snake.body.length-2];
+
+  if(tail.x==penult.x&&tail.y==penult.y) {
+    snake.body.pop();
+  } else if(tail.x==penult.x) {
+    if(tail.y-penult.y>0) {
+      tail.y+=-1;  
+    } else {
+      tail.y+=1;  
+    }
+  } else {
+    if(tail.x-penult.x>0) {
+      tail.x+=-1;  
+    } else {
+      tail.x+=1;  
+    }
+  }
 }
 
 
@@ -128,6 +165,7 @@ function onKey(game,key) {
     "ArrowLeft":'l',
   };
 
+  // !!! compensate tail length
   if(codes[key]=='d'||codes[key]=='u') {
     game.snake.body[0].x = 
       getJunction(game.snake.body[0].x,game.cellDim);  
@@ -135,8 +173,13 @@ function onKey(game,key) {
   } else if(codes[key]=='r'||codes[key]=='l') {
     game.snake.body[0].y = 
       getJunction(game.snake.body[0].y,game.cellDim);  
-    game.snake.dir = codes[key];
   }
+  game.snake.body.unshift(
+    {
+      x:game.snake.body[0].x,
+      y:game.snake.body[0].y
+    });
+  game.snake.dir = codes[key];
 }
 
 /**
