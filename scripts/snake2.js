@@ -116,13 +116,14 @@ function drawSnake(game) {
   });
 }
 
+const stepTable = {
+  'r':['x',1],
+  'l':['x',-1], 
+  'u':['y',-1],
+  'd':['y',1]
+};
+
 function moveSnake(snake) {
-  let stepTable = {
-    'r':['x',1],
-    'l':['x',-1], 
-    'u':['y',-1],
-    'd':['y',1]
-  };
   let amove = stepTable[snake.dir];
   snake.body[0][amove[0]]+=amove[1];
 
@@ -131,17 +132,31 @@ function moveSnake(snake) {
 
   if(tail.x==penult.x&&tail.y==penult.y) {
     snake.body.pop();
-  } else if(tail.x==penult.x) {
+  } else {
+    let tmove = stepTable[getTailDir(snake)];
+    tail[tmove[0]]+=tmove[1];
+  }
+}
+
+/**
+* Snake -> Direction
+* determine the direction of snake's tail
+* (it should always shrink)
+*/
+function getTailDir(snake) {
+  let tail = snake.body[snake.body.length-1];
+  let penult = snake.body[snake.body.length-2];
+  if(tail.x==penult.x) {
     if(tail.y-penult.y>0) {
-      tail.y+=-1;  
+      return 'u';
     } else {
-      tail.y+=1;  
+      return 'd';
     }
   } else {
     if(tail.x-penult.x>0) {
-      tail.x+=-1;  
+      return 'l';
     } else {
-      tail.x+=1;  
+      return 'r';
     }
   }
 }
@@ -149,11 +164,13 @@ function moveSnake(snake) {
 
 function getJunction(coord,cellDim) {
   let coeff = (coord%cellDim)/cellDim;
-  if(coeff>.5) {
-    return Math.ceil(coord/cellDim)*cellDim;
-  } else {
-    return Math.floor(coord/cellDim)*cellDim;
-  }
+  //if(coeff>.5) {
+    //return Math.ceil(coord/cellDim)*cellDim;
+    return (cellDim-coord%cellDim);
+  //} else {
+    //return Math.floor(coord/cellDim)*cellDim;
+    //return -coord%cellDim;
+  //}
 }
 
 
@@ -165,20 +182,64 @@ function onKey(game,key) {
     "ArrowLeft":'l',
   };
 
-  // !!! compensate tail length
-  if(codes[key]=='d'||codes[key]=='u') {
-    game.snake.body[0].x = 
-      getJunction(game.snake.body[0].x,game.cellDim);  
-    game.snake.dir = codes[key];
-  } else if(codes[key]=='r'||codes[key]=='l') {
-    game.snake.body[0].y = 
-      getJunction(game.snake.body[0].y,game.cellDim);  
-  }
-  game.snake.body.unshift(
-    {
+  let delta;
+  let spoint;
+  if(game.snake.dir=='r') {
+    delta = game.cellDim-game.snake.body[0].x%game.cellDim;  
+    spoint = {
+      x:game.snake.body[0].x+delta,
+      y:game.snake.body[0].y 
+    }; 
+  } else if(game.snake.dir=='l') {
+    delta = -game.snake.body[0].x%game.cellDim;  
+    spoint = {
+      x:game.snake.body[0].x+delta,
+      y:game.snake.body[0].y 
+    }; 
+  } else if(game.snake.dir=='d') {
+    delta = game.cellDim-game.snake.body[0].y%game.cellDim;  
+    spoint = {
       x:game.snake.body[0].x,
-      y:game.snake.body[0].y
-    });
+      y:game.snake.body[0].y+delta 
+    }; 
+  } else {
+    delta = -game.snake.body[0].y%game.cellDim;  
+    spoint = {
+      x:game.snake.body[0].x,
+      y:game.snake.body[0].y+delta 
+    }; 
+  }
+
+  let tdir = getTailDir(game.snake);
+  let ntail;
+  let tail = game.snake.body[game.snake.body.length-1];
+  if(tdir=='u') {
+    ntail = {
+      x:tail.x, 
+      y:tail.y-tail.y%game.cellDim
+    };
+  } else if(tdir=='d') {
+    ntail = {
+      x:tail.x, 
+      y:tail.y+game.cellDim-tail.y%game.cellDim
+    };
+  }  else if(tdir=='r') {
+    ntail = {
+      x:tail.x+game.cellDim-tail.x%game.cellDim, 
+      y:tail.y
+    };
+  } else {
+    ntail = {
+      x:tail.x-tail.x%game.cellDim, 
+      y:tail.y
+    };
+  }
+  game.snake.body.pop();
+  game.snake.body.push(ntail);
+  game.snake.body.shift();
+  let npoint = Object.assign({},spoint);
+  game.snake.body.unshift(spoint,npoint);
+  //console.log(game.snake.body);
   game.snake.dir = codes[key];
 }
 
