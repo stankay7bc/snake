@@ -11,7 +11,8 @@ dimensions of a playing field
 
 SNAKE is an Object:
 - body:Array<sPoint> with at least 2 elements
-- dir:Direction
+- dir:Array<<Direction>>, 
+  array of len 2, second elem is dir candidate
 
 sPoint is an Object: 
 - x:N, x coordinate on a canvas

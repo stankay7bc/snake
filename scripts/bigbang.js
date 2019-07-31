@@ -27,24 +27,27 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
   }
   
   function handleOnKey(event) {
-    if(!event.repeat) {
-      handlers.onKey(ws,event.code);
-      setOnKeyHandler();
-    }
+    //console.log(event.code);
+    handlers.onKey(ws,event.code);
+    noOnKey = true;
   }
   function setOnKeyHandler() {
     return document.addEventListener(
       "keydown",handleOnKey,{once:true});
   }
-  setOnKeyHandler();
   
-  
+  let noOnKey = true; 
   function animate(ws) {
     
     if(canvas) canvas.addEventListener("touchstart",touchstart,{once:true});
     
     handlers.onTick(ws);
     handlers.toDraw(ws);
+
+    if(noOnKey) {
+      setOnKeyHandler();
+      noOnKey = false;
+    } 
     
     if(!paused) {
       start(ws);

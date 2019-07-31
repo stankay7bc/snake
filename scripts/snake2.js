@@ -20,8 +20,10 @@ const SNAKE = {
     {x:2*CELLDIM,y:CELLDIM},
     {x:2*CELLDIM,y:4*CELLDIM},
   ],
-  dir:'r'
+  dir:['r','r']
 };
+
+const SLEN = compSnakeLen(SNAKE);
 
 const SGAME = {
   cellDim:CELLDIM,
@@ -90,8 +92,24 @@ const dnField = document // dynamic field
   .querySelector("#dynamic-field");
 const dnCTX = dnField.getContext('2d');
 
+
 /**
-* 
+* SNAKE -> Number
+*/
+function compSnakeLen(snake) {
+  return snake.body.reduce((res,point,indx,arr)=>{
+    if(indx==arr.length-1) {
+      return res;
+    } else {
+      return res+Math.sqrt(
+        (point.x-arr[indx+1].x)**2+
+        (point.y-arr[indx+1].y)**2);
+    }
+  },0); 
+}
+
+/**
+* SGAME -> Void
 */
 function drawSnake(game) {
   dnCTX.clearRect(0,0,game.scene.width,game.scene.height);
@@ -123,19 +141,25 @@ const stepTable = {
   'd':['y',1]
 };
 
-function moveSnake(snake) {
-  let amove = stepTable[snake.dir];
-  snake.body[0][amove[0]]+=amove[1];
-
-  let tail = snake.body[snake.body.length-1];
-  let penult = snake.body[snake.body.length-2];
-
-  if(tail.x==penult.x&&tail.y==penult.y) {
-    snake.body.pop();
-  } else {
-    let tmove = stepTable[getTailDir(snake)];
+/*
+* SGAME -> void
+*/
+function moveSnake(game) {
+  let tail = game.snake.body[game.snake.body.length-1];
+  let penult = game.snake.body[game.snake.body.length-2];
+  if(game.snake.dir[0]==game.snake.dir[1]) {
+    let amove = stepTable[game.snake.dir[0]];
+    game.snake.body[0][amove[0]]+=amove[1];
+    let tmove = stepTable[getTailDir(game.snake)];
     tail[tmove[0]]+=tmove[1];
+  } else {
+    jumpToJunction(game);
+    game.snake.dir[0]=game.snake.dir[1];
+    console.log(compSnakeLen(game.snake));
   }
+  if(tail.x==penult.x&&tail.y==penult.y) {
+    game.snake.body.pop();
+  } 
 }
 
 /**
@@ -161,42 +185,41 @@ function getTailDir(snake) {
   }
 }
 
-
-function getJunction(coord,cellDim) {
-  let coeff = (coord%cellDim)/cellDim;
-  //if(coeff>.5) {
-    //return Math.ceil(coord/cellDim)*cellDim;
-    return (cellDim-coord%cellDim);
-  //} else {
-    //return Math.floor(coord/cellDim)*cellDim;
-    //return -coord%cellDim;
-  //}
+function reduceSnake(snake,delta) {
+  let tail = snake.body[snake.body.length-1];
+  let penult = snake.body[snake.body.length-2];
+  let dir = getTailDir(snake);
+  if(dir=='r') {
+    tail.x = tail.x+delta;
+  } else if(dir=='l') {
+    tail.x = tail.x-delta;
+  } else if(dir=='u') {
+    tail.y = tail.y-delta;
+  } else {
+    tail.y = tail.y+delta;
+  }
 }
 
-
-function onKey(game,key) {
-  let codes = {
-    "ArrowDown":'d',
-    "ArrowRight":'r',
-    "ArrowUp":'u',
-    "ArrowLeft":'l',
-  };
-
+/**
+* SGAME -> void
+* make snake jump to the closest grid intersection
+*/
+function jumpToJunction(game) {
   let delta;
   let spoint;
-  if(game.snake.dir=='r') {
+  if(game.snake.dir[0]=='r') {
     delta = game.cellDim-game.snake.body[0].x%game.cellDim;  
     spoint = {
       x:game.snake.body[0].x+delta,
       y:game.snake.body[0].y 
     }; 
-  } else if(game.snake.dir=='l') {
+  } else if(game.snake.dir[0]=='l') {
     delta = -game.snake.body[0].x%game.cellDim;  
     spoint = {
       x:game.snake.body[0].x+delta,
       y:game.snake.body[0].y 
     }; 
-  } else if(game.snake.dir=='d') {
+  } else if(game.snake.dir[0]=='d') {
     delta = game.cellDim-game.snake.body[0].y%game.cellDim;  
     spoint = {
       x:game.snake.body[0].x,
@@ -210,37 +233,34 @@ function onKey(game,key) {
     }; 
   }
 
-  let tdir = getTailDir(game.snake);
-  let ntail;
-  let tail = game.snake.body[game.snake.body.length-1];
-  if(tdir=='u') {
-    ntail = {
-      x:tail.x, 
-      y:tail.y-tail.y%game.cellDim
-    };
-  } else if(tdir=='d') {
-    ntail = {
-      x:tail.x, 
-      y:tail.y+game.cellDim-tail.y%game.cellDim
-    };
-  }  else if(tdir=='r') {
-    ntail = {
-      x:tail.x+game.cellDim-tail.x%game.cellDim, 
-      y:tail.y
-    };
-  } else {
-    ntail = {
-      x:tail.x-tail.x%game.cellDim, 
-      y:tail.y
-    };
-  }
-  game.snake.body.pop();
-  game.snake.body.push(ntail);
   game.snake.body.shift();
   let npoint = Object.assign({},spoint);
   game.snake.body.unshift(spoint,npoint);
-  //console.log(game.snake.body);
-  game.snake.dir = codes[key];
+  reduceSnake(game.snake,Math.abs(delta));
+}
+
+function getJunction(coord,cellDim) {
+  let coeff = (coord%cellDim)/cellDim;
+  //if(coeff>.5) {
+    //return Math.ceil(coord/cellDim)*cellDim;
+    return (cellDim-coord%cellDim);
+  //} else {
+    //return Math.floor(coord/cellDim)*cellDim;
+    //return -coord%cellDim;
+  //}
+}
+
+function onKey(game,key) {
+  let codes = {
+    "ArrowDown":'d',
+    "ArrowRight":'r',
+    "ArrowUp":'u',
+    "ArrowLeft":'l',
+  };
+
+  if(codes.hasOwnProperty(key)) {
+    game.snake.dir[1] = codes[key];
+  }
 }
 
 /**
@@ -252,7 +272,7 @@ drawScene(SCENE);
 
 var bb = BigBang(SGAME,
   {
-    onTick: game => { moveSnake(game.snake); },
+    onTick: game => { moveSnake(game); },
     toDraw: game => { drawSnake(game); },
     onKey: onKey,
   });
