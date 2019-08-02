@@ -27,16 +27,13 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
   }
   
   function handleOnKey(event) {
-    //console.log(event.code);
-    handlers.onKey(ws,event.code);
-    noOnKey = true;
+    if(!event.repeat) handlers.onKey(ws,event.code);
   }
   function setOnKeyHandler() {
     return document.addEventListener(
       "keydown",handleOnKey,{once:true});
   }
   
-  let noOnKey = true; 
   function animate(ws) {
     
     if(canvas) canvas.addEventListener("touchstart",touchstart,{once:true});
@@ -44,10 +41,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
     handlers.onTick(ws);
     handlers.toDraw(ws);
 
-    if(noOnKey) {
-      setOnKeyHandler();
-      noOnKey = false;
-    } 
+    setOnKeyHandler();
     
     if(!paused) {
       start(ws);

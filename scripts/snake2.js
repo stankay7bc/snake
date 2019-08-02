@@ -149,11 +149,11 @@ function moveSnake(game) {
   let penult = game.snake.body[game.snake.body.length-2];
   if(game.snake.dir[0]==game.snake.dir[1]) {
     let amove = stepTable[game.snake.dir[0]];
-    game.snake.body[0][amove[0]]+=amove[1];
     let tmove = stepTable[getTailDir(game.snake)];
+    game.snake.body[0][amove[0]]+=amove[1];
     tail[tmove[0]]+=tmove[1];
   } else {
-    jumpToJunction(game);
+    jumpToJunction(game,getTailDir(game.snake));
     game.snake.dir[0]=game.snake.dir[1];
     console.log(compSnakeLen(game.snake));
   }
@@ -185,26 +185,21 @@ function getTailDir(snake) {
   }
 }
 
-function reduceSnake(snake,delta) {
+/**
+* SNAKE Number Direction -> void
+* reduce snake's tail by a delta
+*/
+function adjustTail(snake,delta,dir) {
   let tail = snake.body[snake.body.length-1];
-  let penult = snake.body[snake.body.length-2];
-  let dir = getTailDir(snake);
-  if(dir=='r') {
-    tail.x = tail.x+delta;
-  } else if(dir=='l') {
-    tail.x = tail.x-delta;
-  } else if(dir=='u') {
-    tail.y = tail.y-delta;
-  } else {
-    tail.y = tail.y+delta;
-  }
+  let amove = stepTable[dir];
+  tail[amove[0]] = tail[amove[0]]+delta*amove[1];
 }
 
 /**
-* SGAME -> void
+* SGAME Direction -> void
 * make snake jump to the closest grid intersection
 */
-function jumpToJunction(game) {
+function jumpToJunction(game,tailDir) {
   let delta;
   let spoint;
   if(game.snake.dir[0]=='r') {
@@ -236,18 +231,7 @@ function jumpToJunction(game) {
   game.snake.body.shift();
   let npoint = Object.assign({},spoint);
   game.snake.body.unshift(spoint,npoint);
-  reduceSnake(game.snake,Math.abs(delta));
-}
-
-function getJunction(coord,cellDim) {
-  let coeff = (coord%cellDim)/cellDim;
-  //if(coeff>.5) {
-    //return Math.ceil(coord/cellDim)*cellDim;
-    return (cellDim-coord%cellDim);
-  //} else {
-    //return Math.floor(coord/cellDim)*cellDim;
-    //return -coord%cellDim;
-  //}
+  adjustTail(game.snake,Math.abs(delta),tailDir);
 }
 
 function onKey(game,key) {
