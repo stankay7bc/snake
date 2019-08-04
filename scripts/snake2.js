@@ -4,14 +4,15 @@
 const CELLDIM = 14;
 
 const SCENE = {
-  width:CELLDIM*26,
-  height:CELLDIM*30,
-  get cellsX() {
-    return this.width/CELLDIM;
+  cellDim:CELLDIM,
+  cellsX: 26,
+  cellsY: 30,
+  get width() {
+    return this.cellDim*this.cellsX;
   },
-  get cellsY() {
-    return this.height/CELLDIM;
-  }
+  get height() {
+    return this.cellDim*this.cellsY;
+  },
 };
 
 const SNAKE = {
@@ -23,12 +24,26 @@ const SNAKE = {
   dir:['r','r']
 };
 
-const SLEN = compSnakeLen(SNAKE);
+const FOOD = {
+  set setXY(posn) {
+    this.x = posn.x;  
+    this.y = posn.y;  
+  },
+  x:null,
+  y:null,
+  count:0,
+};
+
+FOOD.setXY = {
+  x:getRandomOdd(SCENE.cellsX)*CELLDIM,
+  y:getRandomOdd(SCENE.cellsY)*CELLDIM
+};
 
 const SGAME = {
   cellDim:CELLDIM,
   scene:SCENE,
   snake:SNAKE,
+  food:FOOD,
 };
 
 /**
@@ -38,6 +53,17 @@ const SGAME = {
 /**
 * SCENE HTMLCanvasElement... -> Void
 */
+
+/**
+* Number -> Number
+* generate random odd number up to 
+* and not including limit
+*/
+function getRandomOdd(limit) {
+  return 2*Math.floor(
+    Math.random()*Math.floor(limit/2))+1;
+}
+
 function setSceneDim(scene) {
   for(let i=1;i<arguments.length;i++) {
     arguments[i].setAttribute("width",scene.width);
@@ -88,10 +114,19 @@ function drawScene(scene) {
   bgCTX.save();
 }
 
-const dnField = document // dynamic field
-  .querySelector("#dynamic-field");
-const dnCTX = dnField.getContext('2d');
+const ssField = document // semi-static field
+  .querySelector("#semi-static");
+const ssCTX = ssField.getContext('2d');
 
+function drawFood(game) {
+  ssCTX.clearRect(0,0,ssField.width,ssField.height);
+  //let pad = 0.9;
+  ssCTX.fillStyle = '#e0b200';
+  ssCTX.fillRect(
+    game.food.x-game.cellDim/2,
+    game.food.y-game.cellDim/2,
+    game.cellDim,game.cellDim);
+}
 
 /**
 * SNAKE -> Number
@@ -107,6 +142,10 @@ function compSnakeLen(snake) {
     }
   },0); 
 }
+
+const dnField = document // dynamic field
+  .querySelector("#dynamic-field");
+const dnCTX = dnField.getContext('2d');
 
 /**
 * SGAME -> Void
@@ -161,6 +200,18 @@ function moveSnake(game) {
     game.snake.body.pop();
   } 
 }
+
+function foundFood(game) {
+  if(game.snake.body[0].x==game.food.x &&
+     game.snake.body[0].y==game.food.y) {
+    game.food.setXY = {
+      x:getRandomOdd(game.scene.cellsX)*game.scene.cellDim,
+      y:getRandomOdd(game.scene.cellsY)*game.scene.cellDim
+    };
+    drawFood(game); // temporary, employ MVC dependency model
+  }
+}
+
 
 /**
 * Snake -> Direction
@@ -251,12 +302,16 @@ function onKey(game,key) {
 * init and test
 */
 
-setSceneDim(SCENE,bgField,dnField);
+setSceneDim(SCENE,bgField,dnField,ssField);
 drawScene(SCENE);
+drawFood(SGAME);
 
 var bb = BigBang(SGAME,
   {
-    onTick: game => { moveSnake(game); },
+    onTick: game => { 
+      moveSnake(game); 
+      foundFood(game);
+    },
     toDraw: game => { drawSnake(game); },
     onKey: onKey,
   });
