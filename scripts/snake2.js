@@ -17,9 +17,9 @@ const SCENE = {
 
 const SNAKE = {
   body:[
-    {x:3*CELLDIM,y:CELLDIM},
-    {x:2*CELLDIM,y:CELLDIM},
-    {x:2*CELLDIM,y:4*CELLDIM},
+    {x:4*CELLDIM,y:CELLDIM},
+    /*{x:2*CELLDIM,y:CELLDIM},*/
+    {x:1*CELLDIM,y:CELLDIM},
   ],
   dir:['r','r']
 };
@@ -184,43 +184,60 @@ const stepTable = {
 * SGAME -> void
 */
 function moveSnake(game) {
+
+  if(game.snake.dir[0]!=game.snake.dir[1]) {
+    let tail = game.snake.body[game.snake.body.length-1];
+    let penult = game.snake.body[game.snake.body.length-2];
+    let tm = stepTable[getTailDir(tail,penult)]
+    let hm = stepTable[game.snake.dir[0]];
+
+    function aux1(point,stepData) {
+      let npoint;
+      let newXY;
+      if(stepData[1]==1) {
+        //newXY=Math.ceil(game.snake.body[0][hm[0]]/game.scene.cellDim);
+        newXY=Math.ceil(point[stepData[0]]/game.scene.cellDim);
+      } else {
+        //newXY=Math.floor(game.snake.body[0][hm[0]]/game.scene.cellDim);
+        newXY=Math.floor(point[stepData[0]]/game.scene.cellDim);
+      }
+      npoint = {};
+      npoint[hm[0]] = newXY*game.scene.cellDim; 
+      npoint[hm[0]=='x'?'y':'x'] = point[stepData[0]=='x'?'y':'x'];
+      return npoint;
+    }
+    let npoint = aux1(game.snake.body[0],hm); 
+    game.snake.body.shift();
+    game.snake.body.unshift(npoint,Object.assign({},npoint));
+
+    let npoint2 = aux1(tail,tm); 
+    game.snake.body.pop();
+    game.snake.body.push(npoint2);
+
+    game.snake.dir[0]=game.snake.dir[1];
+  }
+
+  let head = game.snake.body[0];
   let tail = game.snake.body[game.snake.body.length-1];
   let penult = game.snake.body[game.snake.body.length-2];
-  if(game.snake.dir[0]==game.snake.dir[1]) {
-    let amove = stepTable[game.snake.dir[0]];
-    let tmove = stepTable[getTailDir(game.snake)];
-    game.snake.body[0][amove[0]]+=amove[1];
-    tail[tmove[0]]+=tmove[1];
-  } else {
-    jumpToJunction(game,getTailDir(game.snake));
-    game.snake.dir[0]=game.snake.dir[1];
-    console.log(compSnakeLen(game.snake));
-  }
+  let tm = stepTable[getTailDir(tail,penult)]
+  let hm = stepTable[game.snake.dir[0]];
+  tail[tm[0]]+=tm[1];
+  head[hm[0]]+=hm[1];
+
   if(tail.x==penult.x&&tail.y==penult.y) {
     game.snake.body.pop();
-  } 
-}
-
-function foundFood(game) {
-  if(game.snake.body[0].x==game.food.x &&
-     game.snake.body[0].y==game.food.y) {
-    game.food.setXY = {
-      x:getRandomOdd(game.scene.cellsX)*game.scene.cellDim,
-      y:getRandomOdd(game.scene.cellsY)*game.scene.cellDim
-    };
-    drawFood(game); // temporary, employ MVC dependency model
   }
+  //console.log(compSnakeLen(game.snake));
 }
 
 
 /**
-* Snake -> Direction
+* Point Point -> Direction
 * determine the direction of snake's tail
 * (it should always shrink)
 */
-function getTailDir(snake) {
-  let tail = snake.body[snake.body.length-1];
-  let penult = snake.body[snake.body.length-2];
+function getTailDir(tail,penult) {
   if(tail.x==penult.x) {
     if(tail.y-penult.y>0) {
       return 'u';
@@ -234,55 +251,6 @@ function getTailDir(snake) {
       return 'r';
     }
   }
-}
-
-/**
-* SNAKE Number Direction -> void
-* reduce snake's tail by a delta
-*/
-function adjustTail(snake,delta,dir) {
-  let tail = snake.body[snake.body.length-1];
-  let amove = stepTable[dir];
-  tail[amove[0]] = tail[amove[0]]+delta*amove[1];
-}
-
-/**
-* SGAME Direction -> void
-* make snake jump to the closest grid intersection
-*/
-function jumpToJunction(game,tailDir) {
-  let delta;
-  let spoint;
-  if(game.snake.dir[0]=='r') {
-    delta = game.cellDim-game.snake.body[0].x%game.cellDim;  
-    spoint = {
-      x:game.snake.body[0].x+delta,
-      y:game.snake.body[0].y 
-    }; 
-  } else if(game.snake.dir[0]=='l') {
-    delta = -game.snake.body[0].x%game.cellDim;  
-    spoint = {
-      x:game.snake.body[0].x+delta,
-      y:game.snake.body[0].y 
-    }; 
-  } else if(game.snake.dir[0]=='d') {
-    delta = game.cellDim-game.snake.body[0].y%game.cellDim;  
-    spoint = {
-      x:game.snake.body[0].x,
-      y:game.snake.body[0].y+delta 
-    }; 
-  } else {
-    delta = -game.snake.body[0].y%game.cellDim;  
-    spoint = {
-      x:game.snake.body[0].x,
-      y:game.snake.body[0].y+delta 
-    }; 
-  }
-
-  game.snake.body.shift();
-  let npoint = Object.assign({},spoint);
-  game.snake.body.unshift(spoint,npoint);
-  adjustTail(game.snake,Math.abs(delta),tailDir);
 }
 
 function onKey(game,key) {
@@ -310,7 +278,7 @@ var bb = BigBang(SGAME,
   {
     onTick: game => { 
       moveSnake(game); 
-      foundFood(game);
+      //foundFood(game);
     },
     toDraw: game => { drawSnake(game); },
     onKey: onKey,
