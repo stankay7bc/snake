@@ -167,9 +167,9 @@ function drawSnake(game) {
         dnCTX.stroke();
       }
     }
-    dnCTX.fillRect(
+    /*dnCTX.fillRect(
       point.x-game.cellDim/2,point.y-game.cellDim/2,
-      game.cellDim,game.cellDim);
+      game.cellDim,game.cellDim);*/
   });
 }
 
@@ -195,17 +195,16 @@ function moveSnake(game) {
       let npoint;
       let newXY;
       if(stepData[1]==1) {
-        //newXY=Math.ceil(game.snake.body[0][hm[0]]/game.scene.cellDim);
         newXY=Math.ceil(point[stepData[0]]/game.scene.cellDim);
       } else {
-        //newXY=Math.floor(game.snake.body[0][hm[0]]/game.scene.cellDim);
         newXY=Math.floor(point[stepData[0]]/game.scene.cellDim);
       }
       npoint = {};
-      npoint[hm[0]] = newXY*game.scene.cellDim; 
-      npoint[hm[0]=='x'?'y':'x'] = point[stepData[0]=='x'?'y':'x'];
+      npoint[stepData[0]] = newXY*game.scene.cellDim; 
+      npoint[stepData[0]=='x'?'y':'x'] = point[stepData[0]=='x'?'y':'x'];
       return npoint;
     }
+
     let npoint = aux1(game.snake.body[0],hm); 
     game.snake.body.shift();
     game.snake.body.unshift(npoint,Object.assign({},npoint));
@@ -215,20 +214,21 @@ function moveSnake(game) {
     game.snake.body.push(npoint2);
 
     game.snake.dir[0]=game.snake.dir[1];
+  } else {
+    let tail = game.snake.body[game.snake.body.length-1];
+    let penult = game.snake.body[game.snake.body.length-2];
+    if(tail.x==penult.x&&tail.y==penult.y) {
+      game.snake.body.pop();
+      tail = game.snake.body[game.snake.body.length-1];
+      penult = game.snake.body[game.snake.body.length-2];
+    }
+    let head = game.snake.body[0];
+    let tm = stepTable[getTailDir(tail,penult)]
+    let hm = stepTable[game.snake.dir[0]];
+    tail[tm[0]]+=tm[1];
+    head[hm[0]]+=hm[1];
   }
-
-  let head = game.snake.body[0];
-  let tail = game.snake.body[game.snake.body.length-1];
-  let penult = game.snake.body[game.snake.body.length-2];
-  let tm = stepTable[getTailDir(tail,penult)]
-  let hm = stepTable[game.snake.dir[0]];
-  tail[tm[0]]+=tm[1];
-  head[hm[0]]+=hm[1];
-
-  if(tail.x==penult.x&&tail.y==penult.y) {
-    game.snake.body.pop();
-  }
-  //console.log(compSnakeLen(game.snake));
+  console.log(compSnakeLen(game.snake));
 }
 
 
