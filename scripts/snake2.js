@@ -51,10 +51,6 @@ const SGAME = {
 */
 
 /**
-* SCENE HTMLCanvasElement... -> Void
-*/
-
-/**
 * Number -> Number
 * generate random odd number up to 
 * and not including limit
@@ -64,6 +60,9 @@ function getRandomOdd(limit) {
     Math.random()*Math.floor(limit/2))+1;
 }
 
+/**
+* SCENE HTMLCanvasElement... -> Void
+*/
 function setSceneDim(scene) {
   for(let i=1;i<arguments.length;i++) {
     arguments[i].setAttribute("width",scene.width);
@@ -180,55 +179,68 @@ const stepTable = {
   'd':['y',1]
 };
 
+/**
+* sPoint Array cellDim -> sPoint
+* create a new sPoint based on @point direction
+* which is determined @stepData: [axis,offset], see stepTable
+*/
+function createPointAhead(point,stepData,cellDim) {
+  let npoint;
+  let newXY;
+  if(stepData[1]==1) {
+    newXY=Math.ceil(point[stepData[0]]/cellDim);
+  } else {
+    newXY=Math.floor(point[stepData[0]]/cellDim);
+  }
+  npoint = {};
+  npoint[stepData[0]] = newXY*cellDim; 
+  let theOtherAxis = (stepData[0]=='x') ? 'y' : 'x';
+  npoint[theOtherAxis] = point[theOtherAxis];
+  return npoint;
+}
+
+let snakelen;
 /*
 * SGAME -> void
 */
 function moveSnake(game) {
 
+  let tail = game.snake.body[game.snake.body.length-1];
+  let penult = game.snake.body[game.snake.body.length-2];
+  let hm = stepTable[game.snake.dir[0]];
+  
   if(game.snake.dir[0]!=game.snake.dir[1]) {
-    let tail = game.snake.body[game.snake.body.length-1];
-    let penult = game.snake.body[game.snake.body.length-2];
+    
     let tm = stepTable[getTailDir(tail,penult)]
-    let hm = stepTable[game.snake.dir[0]];
 
-    function aux1(point,stepData) {
-      let npoint;
-      let newXY;
-      if(stepData[1]==1) {
-        newXY=Math.ceil(point[stepData[0]]/game.scene.cellDim);
-      } else {
-        newXY=Math.floor(point[stepData[0]]/game.scene.cellDim);
-      }
-      npoint = {};
-      npoint[stepData[0]] = newXY*game.scene.cellDim; 
-      npoint[stepData[0]=='x'?'y':'x'] = point[stepData[0]=='x'?'y':'x'];
-      return npoint;
-    }
-
-    let npoint = aux1(game.snake.body[0],hm); 
+    let npoint = createPointAhead(game.snake.body[0],hm,game.scene.cellDim); 
     game.snake.body.shift();
     game.snake.body.unshift(npoint,Object.assign({},npoint));
 
-    let npoint2 = aux1(tail,tm); 
+    let npoint2 = createPointAhead(tail,tm,game.scene.cellDim); 
     game.snake.body.pop();
     game.snake.body.push(npoint2);
 
     game.snake.dir[0]=game.snake.dir[1];
-  } else {
-    let tail = game.snake.body[game.snake.body.length-1];
-    let penult = game.snake.body[game.snake.body.length-2];
+    
+  } else { // ?
+    
     if(tail.x==penult.x&&tail.y==penult.y) {
       game.snake.body.pop();
-      tail = game.snake.body[game.snake.body.length-1];
+      tail = penult;
       penult = game.snake.body[game.snake.body.length-2];
     }
-    let head = game.snake.body[0];
-    let tm = stepTable[getTailDir(tail,penult)]
-    let hm = stepTable[game.snake.dir[0]];
+ 
+    let tm = stepTable[getTailDir(tail,penult)];
     tail[tm[0]]+=tm[1];
-    head[hm[0]]+=hm[1];
+    game.snake.body[0][hm[0]]+=hm[1];
   }
-  console.log(compSnakeLen(game.snake));
+  
+  let newsnakelen = compSnakeLen(game.snake);
+  if(snakelen!=newsnakelen) {
+    console.log(newsnakelen,game);
+    snakelen=newsnakelen;
+  }
 }
 
 
@@ -254,6 +266,12 @@ function getTailDir(tail,penult) {
 }
 
 function onKey(game,key) {
+  let oppo = {
+    'r':'l',
+    'l':'r',
+    'd':'u',
+    'u':'d'
+  };
   let codes = {
     "ArrowDown":'d',
     "ArrowRight":'r',
@@ -261,7 +279,9 @@ function onKey(game,key) {
     "ArrowLeft":'l',
   };
 
-  if(codes.hasOwnProperty(key)) {
+  if(codes.hasOwnProperty(key) &&
+     codes[key]!=oppo[game.snake.dir[0]] &&
+     codes[key]!=game.snake.dir[0]) {
     game.snake.dir[1] = codes[key];
   }
 }

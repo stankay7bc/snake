@@ -26,14 +26,17 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
     }  
   }
   
+  let lastCall=0;
   function handleOnKey(event) {
-    if(!event.repeat) handlers.onKey(ws,event.code);
+    if(!event.repeat) { 
+      var now = Date.now();
+      if(lastCall+150<now) {
+        lastCall = now;
+        if(!paused) handlers.onKey(ws,event.code);
+      }
+    }
   }
-  function setOnKeyHandler() {
-    return document.addEventListener(
-      "keydown",handleOnKey,{once:true});
-  }
-  
+
   function animate(ws) {
     
     if(canvas) canvas.addEventListener("touchstart",touchstart,{once:true});
@@ -41,8 +44,6 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
     handlers.onTick(ws);
     handlers.toDraw(ws);
 
-    setOnKeyHandler();
-    
     if(!paused) {
       start(ws);
     }
@@ -120,6 +121,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
   
   return {
     start: () => {
+      document.addEventListener("keydown",handleOnKey,{once:false});
       start(ws);
     }
   };
