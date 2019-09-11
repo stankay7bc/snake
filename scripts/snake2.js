@@ -27,23 +27,33 @@ const SNAKE = {
 const FOOD = {
   set setXY(posn) {
     this.x = posn.x;  
-    this.y = posn.y;  
+    this.y = posn.y;
   },
   x:null,
   y:null,
   count:0,
 };
 
-FOOD.setXY = {
-  x:getRandomOdd(SCENE.cellsX)*CELLDIM,
-  y:getRandomOdd(SCENE.cellsY)*CELLDIM
+
+// timer to grow snake
+var COUNTER = 0;
+
+const foodHandler = {
+  set: function(obj,prop,value) {
+    obj[prop] = value;
+    if(prop=='setXY') {
+      drawFood(obj,CELLDIM);
+    }
+  }
 };
+
+const FOOD_PRX = new Proxy(FOOD,foodHandler);
 
 const SGAME = {
   cellDim:CELLDIM,
   scene:SCENE,
   snake:SNAKE,
-  food:FOOD,
+  food:FOOD_PRX,
 };
 
 /**
@@ -117,14 +127,14 @@ const ssField = document // semi-static field
   .querySelector("#semi-static");
 const ssCTX = ssField.getContext('2d');
 
-function drawFood(game) {
+function drawFood(food,cellDim) {
   ssCTX.clearRect(0,0,ssField.width,ssField.height);
   //let pad = 0.9;
   ssCTX.fillStyle = '#e0b200';
   ssCTX.fillRect(
-    game.food.x-game.cellDim/2,
-    game.food.y-game.cellDim/2,
-    game.cellDim,game.cellDim);
+    food.x-cellDim/2,
+    food.y-cellDim/2,
+    cellDim,cellDim);
 }
 
 /**
@@ -232,7 +242,11 @@ function moveSnake(game) {
     }
  
     let tm = stepTable[getTailDir(tail,penult)];
-    tail[tm[0]]+=tm[1];
+    if(COUNTER==0) {
+      tail[tm[0]]+=tm[1];
+    } else { 
+      COUNTER--
+    }
     game.snake.body[0][hm[0]]+=hm[1];
   }
   
@@ -241,6 +255,14 @@ function moveSnake(game) {
     console.log(newsnakelen,game);
     snakelen=newsnakelen;
   }
+}
+
+/**
+* SnakeGame -> Bool
+*/
+function foundFood(game) {
+  return game.snake.body[0].x==game.food.x &&
+         game.snake.body[0].y==game.food.y;
 }
 
 
@@ -292,15 +314,26 @@ function onKey(game,key) {
 
 setSceneDim(SCENE,bgField,dnField,ssField);
 drawScene(SCENE);
-drawFood(SGAME);
+FOOD_PRX.setXY = {
+  x:getRandomOdd(SCENE.cellsX)*CELLDIM,
+  y:getRandomOdd(SCENE.cellsY)*CELLDIM
+};
 
 var bb = BigBang(SGAME,
   {
     onTick: game => { 
       moveSnake(game); 
-      //foundFood(game);
+      if(foundFood(game)) {
+        COUNTER = CELLDIM;
+        game.food.setXY = {
+          x:getRandomOdd(SCENE.cellsX)*CELLDIM,
+          y:getRandomOdd(SCENE.cellsY)*CELLDIM
+        };
+      }
     },
-    toDraw: game => { drawSnake(game); },
+    toDraw: game => { 
+      drawSnake(game);
+    },
     onKey: onKey,
   });
 //bb.start();
