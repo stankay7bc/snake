@@ -1,60 +1,43 @@
 /**
 * GAME DATA
 */
-const CELLDIM = 14;
 
-const SCENE = {
-  cellDim:CELLDIM,
-  cellsX: 26,
-  cellsY: 30,
-  get width() {
-    return this.cellDim*this.cellsX;
-  },
-  get height() {
-    return this.cellDim*this.cellsY;
-  },
-};
+function SGame(cellDim,cellsX,cellsY) {
+  
+  this.scene = {
+    cellDim:cellDim,
+    cellsX: cellsX,
+    cellsY: cellsY,
+    get width() {
+      return this.cellDim*this.cellsX;
+    },
+    get height() {
+      return this.cellDim*this.cellsY;
+    },
+  };
+  
+  this.snake = {
+    body:[
+      {x:8*cellDim,y:cellDim},
+      {x:1*cellDim,y:cellDim},
+    ],
+    dir:['r','r']
+  };
 
-const SNAKE = {
-  body:[
-    {x:4*CELLDIM,y:CELLDIM},
-    /*{x:2*CELLDIM,y:CELLDIM},*/
-    {x:1*CELLDIM,y:CELLDIM},
-  ],
-  dir:['r','r']
-};
-
-const FOOD = {
-  set setXY(posn) {
-    this.x = posn.x;  
-    this.y = posn.y;
-  },
-  x:null,
-  y:null,
-  count:0,
-};
-
-
-// timer to grow snake
-var COUNTER = 0;
-
-const foodHandler = {
-  set: function(obj,prop,value) {
-    obj[prop] = value;
-    if(prop=='setXY') {
-      drawFood(obj,CELLDIM);
-    }
-  }
-};
-
-const FOOD_PRX = new Proxy(FOOD,foodHandler);
-
-const SGAME = {
-  cellDim:CELLDIM,
-  scene:SCENE,
-  snake:SNAKE,
-  food:FOOD_PRX,
-};
+  this.food = {
+    set setXY(posn) {
+      this.x = posn.x;  
+      this.y = posn.y;
+      drawFood(this,cellDim);
+    },
+    x:null,
+    y:null,
+    eaten:0,
+  };
+  
+  this.counter = 0;
+  
+}
 
 /**
 * FUNCTIONS and UTILITIES
@@ -93,15 +76,15 @@ function drawScene(scene) {
         (numColumn%2 == (numRow%2==0 ? 0 : 1) 
           ? '#3cc73c' : '#3ca03c');
       bgCTX.fillRect(
-        CELLDIM*2*numColumn,
-        CELLDIM*2*numRow,
-        CELLDIM*2,
-        CELLDIM*2);
+        scene.cellDim*2*numColumn,
+        scene.cellDim*2*numRow,
+        scene.cellDim*2,
+        scene.cellDim*2);
     }
   }
 
   // draw snake axis
-  let xline = CELLDIM;
+  let xline = scene.cellDim;
   bgCTX.lineWidth = 0.15;  
   do {
 
@@ -117,7 +100,7 @@ function drawScene(scene) {
     bgCTX.closePath();
     bgCTX.stroke();
 
-    xline+=CELLDIM;
+    xline+=scene.cellDim;
 
   } while (xline<scene.height);
   bgCTX.save();
@@ -242,10 +225,10 @@ function moveSnake(game) {
     }
  
     let tm = stepTable[getTailDir(tail,penult)];
-    if(COUNTER==0) {
+    if(game.counter==0) {
       tail[tm[0]]+=tm[1];
     } else { 
-      COUNTER--
+      game.counter--
     }
     game.snake.body[0][hm[0]]+=hm[1];
   }
@@ -264,7 +247,6 @@ function foundFood(game) {
   return game.snake.body[0].x==game.food.x &&
          game.snake.body[0].y==game.food.y;
 }
-
 
 /**
 * Point Point -> Direction
@@ -309,25 +291,62 @@ function onKey(game,key) {
 }
 
 /**
+* SnakeGame -> Boolean
+*/
+function snakeHitBorder(game) {
+  return game.snake.body[0].x==0 ||
+  game.snake.body[0].y==0 ||
+  game.snake.body[0].x==game.scene.width ||
+  game.snake.body[0].y==game.scene.height;
+}
+
+/**
+* sPoint sPoint sPoint -> Boolean
+*/
+function insidePoints(p1,p2,middle) {
+  return (axis) => {
+    return (middle[axis]>p1[axis] && middle[axis]<p2[axis]) ||
+           (middle[axis]>p2[axis] && middle[axis]<p1[axis]);
+  };
+}
+
+/**
+* SnakeGame -> Boolean
+*/
+function snakeHitSelf(game) {
+  if(game.snake.body.length>4) {
+    let hitSelfOn = insidePoints(game.snake.body[3],game.snake.body[4],game.snake.body[0]);
+    if(game.snake.dir[0]=='r'||game.snake.dir[0]=='l') {
+      return hitSelfOn('y') && game.snake.body[4].x==game.snake.body[0].x;
+    } else {
+      return hitSelfOn('x') && game.snake.body[4].y==game.snake.body[0].y;
+    }
+  }
+  return false;
+}
+
+/**
 * init and test
 */
 
-setSceneDim(SCENE,bgField,dnField,ssField);
-drawScene(SCENE);
-FOOD_PRX.setXY = {
-  x:getRandomOdd(SCENE.cellsX)*CELLDIM,
-  y:getRandomOdd(SCENE.cellsY)*CELLDIM
+const sg1 = new SGame(14,26,30);
+
+setSceneDim(sg1.scene,bgField,dnField,ssField);
+drawScene(sg1.scene);
+sg1.food.setXY = {
+  x:getRandomOdd(sg1.scene.cellsX)*sg1.scene.cellDim,
+  y:getRandomOdd(sg1.scene.cellsY)*sg1.scene.cellDim
 };
 
-var bb = BigBang(SGAME,
+var bb = BigBang(sg1,
   {
     onTick: game => { 
       moveSnake(game); 
       if(foundFood(game)) {
-        COUNTER = CELLDIM;
+        game.counter = game.scene.cellDim;
         game.food.setXY = {
-          x:getRandomOdd(SCENE.cellsX)*CELLDIM,
-          y:getRandomOdd(SCENE.cellsY)*CELLDIM
+          x:getRandomOdd(game.scene.cellsX)*game.scene.cellDim,
+          y:getRandomOdd(game.scene.cellsY)*game.scene.cellDim
         };
       }
     },
@@ -335,6 +354,9 @@ var bb = BigBang(SGAME,
       drawSnake(game);
     },
     onKey: onKey,
+    stopWhen: game => {
+      return snakeHitBorder(game)||snakeHitSelf(game);
+    }
   });
 //bb.start();
 
