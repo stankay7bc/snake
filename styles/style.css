@@ -1,3 +1,33 @@
+body {
+  background-color:#252535;
+}
+
+main {
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:calc(5vh + 360px);
+}
+
 .snake-fields {
   position:absolute;
+}
+
+#playground {
+  position:absolute;
+  width:300px;  
+  height:360px;
+  border: 10px solid #523a31;
+  border-radius: 2%;
+}
+
+#game-manager {
+  position: absolute;
+  color:ivory;
+  background-color:blue;
+}
+
+.hidden {
+  display:none;
 }

@@ -7,7 +7,10 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
   
   let paused = isPaused;
   
+  let isOver = false;  
+    
   const identFunc = ws => {return ws;}; 
+
   
   const handlers = {
     onTick: hc.onTick ? hc.onTick : identFunc,
@@ -56,6 +59,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
       document.removeEventListener("keydown",handlePause);
       document.removeEventListener("keydown",handleOnKey);
       handlers.runAfter(ws);
+      isOver = true;
     } else {
       if(fps) {
         setTimeout(()=>{
@@ -123,6 +127,9 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
     start: () => {
       document.addEventListener("keydown",handleOnKey,{once:false});
       start(ws);
+    },
+    isOver: () => {
+      return isOver;
     }
   };
 }
