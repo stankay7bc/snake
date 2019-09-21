@@ -23,9 +23,13 @@ main {
 }
 
 #game-manager {
-  position: absolute;
-  color:ivory;
-  background-color:blue;
+  z-index:1;
+}
+
+#game-manager > section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .hidden {

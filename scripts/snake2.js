@@ -325,39 +325,22 @@ function snakeHitSelf(game) {
   return false;
 }
 
-/**
-* init and test
-*/
-
-function makeGame(paused) {
-
-  const sg1 = new SGame(15,20,24);
-
-  setSceneDim(sg1.scene,bgField,dnField,ssField);
-  drawScene(sg1.scene);
-  sg1.food.setXY = {
-    x:getRandomOdd(sg1.scene.cellsX)*sg1.scene.cellDim,
-    y:getRandomOdd(sg1.scene.cellsY)*sg1.scene.cellDim
-  };
-
-  return BigBang(sg1,
-    {
-      onTick: game => { 
-        moveSnake(game); 
-        if(foundFood(game)) {
-          game.counter = game.scene.cellDim;
-          game.food.setXY = {
-            x:getRandomOdd(game.scene.cellsX)*game.scene.cellDim,
-            y:getRandomOdd(game.scene.cellsY)*game.scene.cellDim
-          };
-        }
-      },
-      toDraw: game => { 
-        drawSnake(game);
-      },
-      onKey: onKey,
-      stopWhen: game => {
-        return snakeHitBorder(game)||snakeHitSelf(game);
-      }
-    },false,paused);
-}
+const snakeHandlers = {
+  onTick: game => { 
+    moveSnake(game); 
+    if(foundFood(game)) {
+      game.counter = game.scene.cellDim;
+      game.food.setXY = {
+        x:getRandomOdd(game.scene.cellsX)*game.scene.cellDim,
+        y:getRandomOdd(game.scene.cellsY)*game.scene.cellDim
+      };
+    }
+  },
+  toDraw: game => { 
+    drawSnake(game);
+  },
+  onKey: onKey,
+  stopWhen: game => {
+    return snakeHitBorder(game)||snakeHitSelf(game);
+  }
+};

@@ -3,11 +3,13 @@
 */
 function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
   
+  let bb = this;
+
   let intervalId = null;
   
-  let paused = isPaused;
+  this.paused = isPaused;
   
-  let isOver = false;  
+  this.isOver = false;  
     
   const identFunc = ws => {return ws;}; 
 
@@ -22,8 +24,8 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
   
   function handlePause(event) {
     if(event.code=="KeyP") {
-      paused = paused ? false : true;
-      if(!paused) {
+      bb.paused = bb.paused ? false : true;
+      if(!bb.paused) {
         start(ws);
       }
     }  
@@ -35,7 +37,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
       var now = Date.now();
       if(lastCall+150<now) {
         lastCall = now;
-        if(!paused) handlers.onKey(ws,event.code);
+        if(!bb.paused) handlers.onKey(ws,event.code);
       }
     }
   }
@@ -47,7 +49,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
     handlers.onTick(ws);
     handlers.toDraw(ws);
 
-    if(!paused) {
+    if(!bb.paused) {
       start(ws);
     }
   }
@@ -59,7 +61,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
       document.removeEventListener("keydown",handlePause);
       document.removeEventListener("keydown",handleOnKey);
       handlers.runAfter(ws);
-      isOver = true;
+      this.isOver = true;
     } else {
       if(fps) {
         setTimeout(()=>{
@@ -123,13 +125,9 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
     
   }
   
-  return {
-    start: () => {
-      document.addEventListener("keydown",handleOnKey,{once:false});
-      start(ws);
-    },
-    isOver: () => {
-      return isOver;
-    }
+  this.start = () => {
+    document.addEventListener("keydown",handleOnKey,{once:false});
+    start(ws);
   };
+
 }
