@@ -1,9 +1,0 @@
-ISSUES
-- check self-collision
-- food generation glitch, sometimes seems to not work
-
-TASKS
-[1] Add swipe controls
-[2] Add eaten informer
-- Snake body visual design
-- Smoother snake turn mechanics
