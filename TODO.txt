@@ -1,9 +1,9 @@
-NEXT
-- revisit and document game data structures
-
 ISSUES
-- input events break after game restart
+- check self-collision
+- food generation glitch, sometimes seems to not work
 
-BACKLOG
-- uniform speed across devices (screens)
-- one place to change scene dimensions
+TASKS
+[1] Add swipe controls
+[2] Add eaten informer
+- Snake body visual design
+- Smoother snake turn mechanics

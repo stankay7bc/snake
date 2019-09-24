@@ -9,10 +9,7 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
   
   this.paused = isPaused;
   
-  this.isOver = false;  
-    
   const identFunc = ws => {return ws;}; 
-
   
   const handlers = {
     onTick: hc.onTick ? hc.onTick : identFunc,
@@ -31,10 +28,10 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
     }  
   }
   
-  let lastCall=0;
+  let lastCall=0; 
+  let now; // DOMHighResTimeStamp 
   function handleOnKey(event) {
-    if(!event.repeat) { 
-      var now = Date.now();
+    if(!event.repeat) {
       if(lastCall+150<now) {
         lastCall = now;
         if(!bb.paused) handlers.onKey(ws,event.code);
@@ -61,14 +58,17 @@ function BigBang(ws,hc,fps=false,isPaused=false,canvas) {
       document.removeEventListener("keydown",handlePause);
       document.removeEventListener("keydown",handleOnKey);
       handlers.runAfter(ws);
-      this.isOver = true;
     } else {
+      let callback = ts => {
+        now = ts;
+        animate(ws);
+      };
       if(fps) {
         setTimeout(()=>{
-          intervalId = window.requestAnimationFrame(ts=>{animate(ws)});
+          intervalId = window.requestAnimationFrame(callback);
         },1000/fps);
       } else {
-        intervalId = window.requestAnimationFrame(ts=>{animate(ws)});
+        intervalId = window.requestAnimationFrame(callback);
       }
     }
   };

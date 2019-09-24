@@ -334,6 +334,7 @@ const snakeHandlers = {
         x:getRandomOdd(game.scene.cellsX)*game.scene.cellDim,
         y:getRandomOdd(game.scene.cellsY)*game.scene.cellDim
       };
+      game.food.eaten++;
     }
   },
   toDraw: game => { 

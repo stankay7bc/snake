@@ -1,50 +1,64 @@
-const gmBox = document.querySelector("#game-manager");
-const playAgain = gmBox.querySelector("result-box");
+{
 
-const arrowKeys = [
-  "ArrowDown",
-  "ArrowUp",
-  "ArrowRight",
-  "ArrowLeft"
-];
+  const gmBox = document.querySelector("#game-manager");
+  const playAgain = gmBox.querySelector("result-box");
 
-function GMan() {
+  const arrowKeys = [
+    "ArrowDown",
+    "ArrowUp",
+    "ArrowRight",
+    "ArrowLeft"
+  ];
 
-  this.game = new SGame(15,20,24);
-  this.bb;
+  let game = new SGame(15,20,24);
+  let bb; // for holding BigBang instance 
 
-  snakeHandlers.runAfter = () => {
+  snakeHandlers.runAfter = (ws) => {
     playAgain.removeAttribute("class");
+    playAgain.setAttribute("count",ws.food.eaten);
     gmBox.removeAttribute("class");
-    this.game = new SGame(15,20,24);
-    this.init();
+    game = new SGame(15,20,24);
+    init();
   };
 
-  this.init = function() {
+  let keyHandler = event => {
+    if(arrowKeys.reduce((hasKey,akey)=>{
+        return hasKey || event.code===akey;     
+      },false)) {
+        dnField.removeEventListener("touchstart",touchHandler);
+        gmBox.setAttribute("class","hidden");
+        bb.start();
+    } else {
+      document.addEventListener("keydown",keyHandler,{once:true});
+    }
+  }
+
+  let touchHandler = event => {
+    document.removeEventListener("keydown",keyHandler);
+    gmBox.setAttribute("class","hidden");
+    bb.start();  
+  };
+
+  let init = () => {
     
-    setSceneDim(this.game.scene,bgField,dnField,ssField);
-    drawScene(this.game.scene);
-    this.game.food.setXY = {
-      x:getRandomOdd(this.game.scene.cellsX)*this.game.scene.cellDim,
-      y:getRandomOdd(this.game.scene.cellsY)*this.game.scene.cellDim
+    setSceneDim(game.scene,bgField,dnField,ssField);
+    drawScene(game.scene);
+    game.food.setXY = {
+      x:getRandomOdd(game.scene.cellsX)*game.scene.cellDim,
+      y:getRandomOdd(game.scene.cellsY)*game.scene.cellDim
     };
     
-    this.bb = new BigBang(this.game,snakeHandlers);
+    bb = new BigBang(
+      game,snakeHandlers,false,false,dnField);
 
-    document.addEventListener("keydown",event=>{
-      if(arrowKeys.reduce((hasKey,akey)=>{
-          return hasKey || event.code===akey;     
-        },false)) {
-          gmBox.setAttribute("class","hidden");
-          this.bb.start();
-        }      
-    },{once:true});
+    document.addEventListener("keydown",keyHandler,{once:true});
+    dnField.addEventListener("touchstart",touchHandler,{once:true});
   };
 
-  this.init();
+  init();
 
 }
 
-const gm = new GMan();
+
 
 
