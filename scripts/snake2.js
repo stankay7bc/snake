@@ -159,9 +159,21 @@ function drawSnake(game) {
         dnCTX.stroke();
       }
     }
-    /*dnCTX.fillRect(
-      point.x-game.cellDim/2,point.y-game.cellDim/2,
-      game.cellDim,game.cellDim);*/
+  });
+}
+
+function drawSnakeV2(game) {
+  dnCTX.clearRect(0,0,game.scene.width,game.scene.height);
+  let bodyHW = game.scene.cellDim/5;
+  dnCTX.fillStyle = '#1a1a79';
+  game.snake.body.slice(1).forEach((cell,index)=>{
+    // smooth connections between rectangles
+    dnCTX.fillRect(cell.x-bodyHW,cell.y-bodyHW,bodyHW*2,bodyHW*2);
+    if(cell.x==game.snake.body[index].x) {
+      dnCTX.fillRect(cell.x-bodyHW,cell.y,bodyHW*2,game.snake.body[index].y-cell.y);
+    } else {
+      dnCTX.fillRect(cell.x,cell.y-bodyHW,(game.snake.body[index].x-cell.x),bodyHW*2);
+    }
   });
 }
 
@@ -338,7 +350,7 @@ const snakeHandlers = {
     }
   },
   toDraw: game => { 
-    drawSnake(game);
+    drawSnakeV2(game);
   },
   onKey: onKey,
   stopWhen: game => {
